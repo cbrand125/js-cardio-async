@@ -49,8 +49,8 @@ function reset() {
       date: 'July 15, 2019'
     })
   );
-  const log = fs.writeFile('./log.txt', '');
-  return Promise.all([andrew, scott, post, log]);
+  const logFile = fs.writeFile('./log.txt', '');
+  return Promise.all([andrew, scott, post, logFile]);
 }
 
 /**
@@ -170,7 +170,7 @@ async function mergeData() {
         }
       }
     }
-    return log(JSON.stringify(allData));
+    return fs.writeFile('merged.json', JSON.stringify(allData));
   } catch {
     return log(`ERROR reading this directory`);
   }
@@ -200,7 +200,7 @@ async function union(fileA, fileB) {
     unionData[value] = '';
   });
 
-  return log(Object.keys(unionData));
+  return fs.writeFile('union.txt', Object.keys(unionData));
 }
 
 /**
@@ -226,7 +226,7 @@ async function intersect(fileA, fileB) {
     }
   });
 
-  return log(Object.keys(intersectData));
+  return fs.writeFile('intersect.txt', Object.keys(intersectData));
 }
 
 /**
@@ -257,7 +257,7 @@ async function difference(fileA, fileB) {
     }
   });
 
-  return log(Object.keys(differentData));
+  return fs.writeFile('difference.txt', Object.keys(differentData));
 }
 
 module.exports = {
