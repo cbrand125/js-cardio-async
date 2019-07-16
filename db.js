@@ -72,7 +72,7 @@ async function get(file, key) {
     if (!value) return log(`ERROR ${key} invalid key on ${file}`);
     return log(value);
   } catch (err) {
-    return log(`ERROR no such file or directory ${file}`);
+    return log(`ERROR no such file or directory ${file}\n\n${err}`);
   }
 }
 
@@ -87,9 +87,10 @@ async function set(file, key, value) {
     const data = await fs.readFile(file, 'utf8');
     const parsed = JSON.parse(data);
     parsed[key] = value;
-    return fs.writeFile(file, JSON.stringify(parsed));
+    await fs.writeFile(file, JSON.stringify(parsed));
+    return log(`${file}: ${value} wrote to ${key}`);
   } catch (err) {
-    return log(`ERROR no such file or directory ${file}`);
+    return log(`ERROR no such file or directory: ${file}\n\n${err}`);
   }
 }
 
@@ -103,9 +104,10 @@ async function remove(file, key) {
     const data = await fs.readFile(file, 'utf8');
     const parsed = JSON.parse(data);
     delete parsed[key];
-    return fs.writeFile(file, JSON.stringify(parsed));
+    await fs.writeFile(file, JSON.stringify(parsed));
+    return log(`${file}: ${key} removed`);
   } catch (err) {
-    return log(`ERROR no such file or directory ${file}`);
+    return log(`ERROR no such file or directory: ${file}\n\n${err}`);
   }
 }
 
@@ -116,9 +118,10 @@ async function remove(file, key) {
  */
 async function deleteFile(file) {
   try {
-    return fs.unlink(file);
-  } catch {
-    return log(`ERROR no such file or directory ${file}`);
+    await fs.unlink(file);
+    return log(`${file}: deleted`);
+  } catch (err) {
+    return log(`ERROR no such file or directory: ${file}\n\n${err}`);
   }
 }
 
@@ -133,7 +136,8 @@ async function createFile(file) {
     return log(`ERROR file or directory already exists: ${file}`);
   } catch {
     const emptyObject = {};
-    return fs.writeFile(file, emptyObject);
+    await fs.writeFile(file, emptyObject);
+    return log(`${file}: created`);
   }
 }
 
@@ -166,13 +170,14 @@ async function mergeData() {
           const fileParsed = JSON.parse(fileData);
           allData[files[i].slice(0, files[i].length - 5)] = fileParsed;
         } catch {
-          await log(`ERROR reading file or directory ${files[i]}`);
+          await log(`ERROR reading file or directory: ${files[i]}`);
         }
       }
     }
-    return fs.writeFile('merged.json', JSON.stringify(allData));
-  } catch {
-    return log(`ERROR reading this directory`);
+    await fs.writeFile('merged.json', JSON.stringify(allData));
+    return log(`merged.json created`);
+  } catch (err) {
+    return log(`ERROR reading directory\n\n${err}`);
   }
 }
 
@@ -185,22 +190,29 @@ async function mergeData() {
  *  // ['firstname', 'lastname', 'email', 'username']
  */
 async function union(fileA, fileB) {
-  const dataA = await fs.readFile(fileA, 'utf8');
-  const parsedA = JSON.parse(dataA);
-  const keysA = Object.keys(parsedA);
-  const dataB = await fs.readFile(fileB, 'utf8');
-  const parsedB = JSON.parse(dataB);
-  const keysB = Object.keys(parsedB);
-  const unionData = {};
+  try {
+    const dataA = await fs.readFile(fileA, 'utf8');
+    const parsedA = JSON.parse(dataA);
+    const keysA = Object.keys(parsedA);
+    const dataB = await fs.readFile(fileB, 'utf8');
+    const parsedB = JSON.parse(dataB);
+    const keysB = Object.keys(parsedB);
+    const unionData = {};
 
-  keysA.forEach(value => {
-    unionData[value] = '';
-  });
-  keysB.forEach(value => {
-    unionData[value] = '';
-  });
+    keysA.forEach(value => {
+      unionData[value] = '';
+    });
+    keysB.forEach(value => {
+      unionData[value] = '';
+    });
 
-  return fs.writeFile('union.txt', Object.keys(unionData));
+    await fs.writeFile('union.txt', Object.keys(unionData));
+    return log(`${fileA} and ${fileB}: union.txt created`);
+  } catch (err) {
+    return log(
+      `ERROR reading file or directory ${fileA} or ${fileB}\n\n${err}`
+    );
+  }
 }
 
 /**
@@ -212,21 +224,28 @@ async function union(fileA, fileB) {
  *    // ['firstname', 'lastname', 'email']
  */
 async function intersect(fileA, fileB) {
-  const dataA = await fs.readFile(fileA, 'utf8');
-  const parsedA = JSON.parse(dataA);
-  const keysA = Object.keys(parsedA);
-  const dataB = await fs.readFile(fileB, 'utf8');
-  const parsedB = JSON.parse(dataB);
-  const keysB = Object.keys(parsedB);
-  const intersectData = {};
+  try {
+    const dataA = await fs.readFile(fileA, 'utf8');
+    const parsedA = JSON.parse(dataA);
+    const keysA = Object.keys(parsedA);
+    const dataB = await fs.readFile(fileB, 'utf8');
+    const parsedB = JSON.parse(dataB);
+    const keysB = Object.keys(parsedB);
+    const intersectData = {};
 
-  keysA.forEach(value => {
-    if (parsedB[value]) {
-      intersectData[value] = '';
-    }
-  });
+    keysA.forEach(value => {
+      if (parsedB[value]) {
+        intersectData[value] = '';
+      }
+    });
 
-  return fs.writeFile('intersect.txt', Object.keys(intersectData));
+    await fs.writeFile('intersect.txt', Object.keys(intersectData));
+    return log(`${fileA} and ${fileB}: intersect.txt created`);
+  } catch (err) {
+    return log(
+      `ERROR reading file or directory ${fileA} or ${fileB}\n\n${err}`
+    );
+  }
 }
 
 /**
@@ -238,26 +257,33 @@ async function intersect(fileA, fileB) {
  *    // ['username']
  */
 async function difference(fileA, fileB) {
-  const dataA = await fs.readFile(fileA, 'utf8');
-  const parsedA = JSON.parse(dataA);
-  const keysA = Object.keys(parsedA);
-  const dataB = await fs.readFile(fileB, 'utf8');
-  const parsedB = JSON.parse(dataB);
-  const keysB = Object.keys(parsedB);
-  const differentData = {};
+  try {
+    const dataA = await fs.readFile(fileA, 'utf8');
+    const parsedA = JSON.parse(dataA);
+    const keysA = Object.keys(parsedA);
+    const dataB = await fs.readFile(fileB, 'utf8');
+    const parsedB = JSON.parse(dataB);
+    const keysB = Object.keys(parsedB);
+    const differentData = {};
 
-  keysA.forEach(value => {
-    if (!parsedB[value]) {
-      differentData[value] = '';
-    }
-  });
-  keysB.forEach(value => {
-    if (!parsedA[value]) {
-      differentData[value] = '';
-    }
-  });
+    keysA.forEach(value => {
+      if (!parsedB[value]) {
+        differentData[value] = '';
+      }
+    });
+    keysB.forEach(value => {
+      if (!parsedA[value]) {
+        differentData[value] = '';
+      }
+    });
 
-  return fs.writeFile('difference.txt', Object.keys(differentData));
+    await fs.writeFile('difference.txt', Object.keys(differentData));
+    return log(`${fileA} and ${fileB}: difference.txt created`);
+  } catch (err) {
+    return log(
+      `ERROR reading file or directory ${fileA} or ${fileB}\n\n${err}`
+    );
+  }
 }
 
 module.exports = {
