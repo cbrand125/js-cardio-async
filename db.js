@@ -29,7 +29,7 @@ function reset() {
     JSON.stringify({
       firstname: 'Andrew',
       lastname: 'Maney',
-      email: 'amaney@talentpath.com',
+      email: 'amaney@talentpath.com'
     })
   );
   const scott = fs.writeFile(
@@ -38,7 +38,7 @@ function reset() {
       firstname: 'Scott',
       lastname: 'Roberts',
       email: 'sroberts@talentpath.com',
-      username: 'scoot',
+      username: 'scoot'
     })
   );
   const post = fs.writeFile(
@@ -46,7 +46,7 @@ function reset() {
     JSON.stringify({
       title: 'Async/Await lesson',
       description: 'How to write asynchronous JavaScript',
-      date: 'July 15, 2019',
+      date: 'July 15, 2019'
     })
   );
   const log = fs.writeFile('./log.txt', '');
@@ -58,7 +58,34 @@ function reset() {
  * @param {string} file
  * @param {string} key
  */
-async function get(file, key) {}
+async function get(file, key) {
+  /* Async/await approach */
+  try {
+    // 1. read file
+    // 2. handle promise -> data
+    const data = await fs.readFile(file, 'utf8');
+    // 3. parse data from string -> JSON
+    const parsed = JSON.parse(data);
+    // 4. use the key to get the value at object[key]
+    const value = parsed[key];
+    // 5. append the log file with the above value
+    if (!value) return log(`ERROR ${key} invalid key on ${file}`);
+    return log(value);
+  } catch (err) {
+    await log(`ERROR no such file or directory ${file}`);
+  }
+  /* Promise-based approach
+  return fs
+    .readFile(file, 'utf8')
+    .then(data => {
+      const parsed = JSON.parse(data);
+      const value = parsed[key];
+      if (!value) return log(`ERROR ${key} invalid key on ${file}`);
+      return log(value);
+    })
+    .catch(err => log(`ERROR no such file or directory ${file}`));
+  */
+}
 
 /**
  * Sets the value of object[key] and rewrites object to file
@@ -66,28 +93,60 @@ async function get(file, key) {}
  * @param {string} key
  * @param {string} value
  */
-function set(file, key, value) {}
+async function set(file, key, value) {
+  try {
+    const data = await fs.readFile(file, 'utf8');
+    const parsed = JSON.parse(data);
+    parsed[key] = value;
+    await fs.writeFile(file, JSON.stringify(parsed));
+  } catch (err) {
+    await log(`ERROR no such file or directory ${file}`);
+  }
+}
 
 /**
  * Deletes key from object and rewrites object to file
  * @param {string} file
  * @param {string} key
  */
-function remove(file, key) {}
+async function remove(file, key) {
+  try {
+    const data = await fs.readFile(file, 'utf8');
+    const parsed = JSON.parse(data);
+    delete parsed[key];
+    await fs.writeFile(file, JSON.stringify(parsed));
+  } catch (err) {
+    await log(`ERROR no such file or directory ${file}`);
+  }
+}
 
 /**
  * Deletes file.
  * Gracefully errors if the file does not exist.
  * @param {string} file
  */
-function deleteFile(file) {}
+async function deleteFile(file) {
+  try {
+    await fs.unlink(file);
+  } catch {
+    await log(`ERROR no such file or directory ${file}`);
+  }
+}
 
 /**
  * Creates file with an empty object inside.
  * Gracefully errors if the file already exists.
  * @param {string} file JSON filename
  */
-function createFile(file) {}
+async function createFile(file) {
+  try {
+    await fs.access(file);
+    await log(`ERROR file or directory already exists: ${file}`);
+  } catch {
+    const emptyObject = {};
+    await fs.writeFile(file, emptyObject);
+  }
+}
 
 /**
  * Merges all data into a mega object and logs it.
@@ -107,7 +166,26 @@ function createFile(file) {}
  *    }
  * }
  */
-function mergeData() {}
+async function mergeData() {
+  try {
+    const files = await fs.readdir('.');
+    const allData = {};
+    for (let i = 0; i < files.length; i++) {
+      if (files[i].endsWith('.json') && !files[i].startsWith('package')) {
+        try {
+          const fileData = await fs.readFile(files[i], 'utf8');
+          const fileParsed = JSON.parse(fileData);
+          allData[files[i].slice(0, files[i].length - 5)] = fileParsed;
+        } catch {
+          await log(`ERROR reading file or directory ${files[i]}`);
+        }
+      }
+    }
+    await log(JSON.stringify(allData));
+  } catch {
+    await log(`ERROR reading this directory`);
+  }
+}
 
 /**
  * Takes two files and logs all the properties as a list without duplicates
@@ -149,5 +227,5 @@ module.exports = {
   union,
   intersect,
   difference,
-  reset,
+  reset
 };
