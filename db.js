@@ -195,7 +195,24 @@ async function mergeData() {
  *  union('scott.json', 'andrew.json')
  *  // ['firstname', 'lastname', 'email', 'username']
  */
-function union(fileA, fileB) {}
+async function union(fileA, fileB) {
+  const dataA = await fs.readFile(fileA, 'utf8');
+  const parsedA = JSON.parse(dataA);
+  const keysA = Object.keys(parsedA);
+  const dataB = await fs.readFile(fileB, 'utf8');
+  const parsedB = JSON.parse(dataB);
+  const keysB = Object.keys(parsedB);
+  const unionData = {};
+
+  keysA.forEach(value => {
+    unionData[value] = '';
+  });
+  keysB.forEach(value => {
+    unionData[value] = '';
+  });
+
+  await log(Object.keys(unionData));
+}
 
 /**
  * Takes two files and logs all the properties that both objects share
@@ -205,7 +222,23 @@ function union(fileA, fileB) {}
  *    intersect('scott.json', 'andrew.json')
  *    // ['firstname', 'lastname', 'email']
  */
-function intersect(fileA, fileB) {}
+async function intersect(fileA, fileB) {
+  const dataA = await fs.readFile(fileA, 'utf8');
+  const parsedA = JSON.parse(dataA);
+  const keysA = Object.keys(parsedA);
+  const dataB = await fs.readFile(fileB, 'utf8');
+  const parsedB = JSON.parse(dataB);
+  const keysB = Object.keys(parsedB);
+  const intersectData = {};
+
+  keysA.forEach(value => {
+    if (parsedB[value]) {
+      intersectData[value] = '';
+    }
+  });
+
+  await log(Object.keys(intersectData));
+}
 
 /**
  * Takes two files and logs all properties that are different between the two objects
@@ -215,7 +248,28 @@ function intersect(fileA, fileB) {}
  *    difference('scott.json', 'andrew.json')
  *    // ['username']
  */
-function difference(fileA, fileB) {}
+async function difference(fileA, fileB) {
+  const dataA = await fs.readFile(fileA, 'utf8');
+  const parsedA = JSON.parse(dataA);
+  const keysA = Object.keys(parsedA);
+  const dataB = await fs.readFile(fileB, 'utf8');
+  const parsedB = JSON.parse(dataB);
+  const keysB = Object.keys(parsedB);
+  const differentData = {};
+
+  keysA.forEach(value => {
+    if (!parsedB[value]) {
+      differentData[value] = '';
+    }
+  });
+  keysB.forEach(value => {
+    if (!parsedA[value]) {
+      differentData[value] = '';
+    }
+  });
+
+  await log(Object.keys(differentData));
+}
 
 module.exports = {
   get,
