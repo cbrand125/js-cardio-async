@@ -72,19 +72,8 @@ async function get(file, key) {
     if (!value) return log(`ERROR ${key} invalid key on ${file}`);
     return log(value);
   } catch (err) {
-    await log(`ERROR no such file or directory ${file}`);
+    return log(`ERROR no such file or directory ${file}`);
   }
-  /* Promise-based approach
-  return fs
-    .readFile(file, 'utf8')
-    .then(data => {
-      const parsed = JSON.parse(data);
-      const value = parsed[key];
-      if (!value) return log(`ERROR ${key} invalid key on ${file}`);
-      return log(value);
-    })
-    .catch(err => log(`ERROR no such file or directory ${file}`));
-  */
 }
 
 /**
@@ -98,9 +87,9 @@ async function set(file, key, value) {
     const data = await fs.readFile(file, 'utf8');
     const parsed = JSON.parse(data);
     parsed[key] = value;
-    await fs.writeFile(file, JSON.stringify(parsed));
+    return fs.writeFile(file, JSON.stringify(parsed));
   } catch (err) {
-    await log(`ERROR no such file or directory ${file}`);
+    return log(`ERROR no such file or directory ${file}`);
   }
 }
 
@@ -114,9 +103,9 @@ async function remove(file, key) {
     const data = await fs.readFile(file, 'utf8');
     const parsed = JSON.parse(data);
     delete parsed[key];
-    await fs.writeFile(file, JSON.stringify(parsed));
+    return fs.writeFile(file, JSON.stringify(parsed));
   } catch (err) {
-    await log(`ERROR no such file or directory ${file}`);
+    return log(`ERROR no such file or directory ${file}`);
   }
 }
 
@@ -127,9 +116,9 @@ async function remove(file, key) {
  */
 async function deleteFile(file) {
   try {
-    await fs.unlink(file);
+    return fs.unlink(file);
   } catch {
-    await log(`ERROR no such file or directory ${file}`);
+    return log(`ERROR no such file or directory ${file}`);
   }
 }
 
@@ -141,10 +130,10 @@ async function deleteFile(file) {
 async function createFile(file) {
   try {
     await fs.access(file);
-    await log(`ERROR file or directory already exists: ${file}`);
+    return log(`ERROR file or directory already exists: ${file}`);
   } catch {
     const emptyObject = {};
-    await fs.writeFile(file, emptyObject);
+    return fs.writeFile(file, emptyObject);
   }
 }
 
@@ -181,9 +170,9 @@ async function mergeData() {
         }
       }
     }
-    await log(JSON.stringify(allData));
+    return log(JSON.stringify(allData));
   } catch {
-    await log(`ERROR reading this directory`);
+    return log(`ERROR reading this directory`);
   }
 }
 
@@ -211,7 +200,7 @@ async function union(fileA, fileB) {
     unionData[value] = '';
   });
 
-  await log(Object.keys(unionData));
+  return log(Object.keys(unionData));
 }
 
 /**
@@ -237,7 +226,7 @@ async function intersect(fileA, fileB) {
     }
   });
 
-  await log(Object.keys(intersectData));
+  return log(Object.keys(intersectData));
 }
 
 /**
@@ -268,7 +257,7 @@ async function difference(fileA, fileB) {
     }
   });
 
-  await log(Object.keys(differentData));
+  return log(Object.keys(differentData));
 }
 
 module.exports = {
