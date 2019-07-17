@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
+    "dev": "nodemon test.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -19,6 +20,6 @@
   },
   "homepage": "https://github.com/talent-path-la/js-cardio-async#readme",
   "dependencies": {
-    "readline-sync": "^1.4.9"
+    "nodemon": "^1.19.1"
   }
 }
