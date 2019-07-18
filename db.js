@@ -16,8 +16,12 @@ ex after running delete('user.json'):
 Errors should also be logged (preferably in a human-readable format)
 */
 
-function log(value) {
-  return fs.appendFile('log.txt', `${value} ${Date.now()}\n`);
+async function log(value, error) {
+  await fs.appendFile('log.txt', `${value} ${Date.now()}\n`);
+  if (error) {
+    await fs.appendFile('log.txt', `\n${error}`);
+    throw error;
+  }
 }
 
 /**
@@ -72,7 +76,7 @@ async function get(file, key) {
     if (!value) return log(`ERROR ${key} invalid key on ${file}`);
     return log(value);
   } catch (err) {
-    return log(`ERROR no such file or directory ${file}\n\n${err}`);
+    return log(`ERROR no such file or directory ${file}`, err);
   }
 }
 
@@ -90,7 +94,7 @@ async function set(file, key, value) {
     await fs.writeFile(file, JSON.stringify(parsed));
     return log(`${file}: ${value} wrote to ${key}`);
   } catch (err) {
-    return log(`ERROR no such file or directory: ${file}\n\n${err}`);
+    return log(`ERROR no such file or directory: ${file}`, err);
   }
 }
 
@@ -107,7 +111,7 @@ async function remove(file, key) {
     await fs.writeFile(file, JSON.stringify(parsed));
     return log(`${file}: ${key} removed`);
   } catch (err) {
-    return log(`ERROR no such file or directory: ${file}\n\n${err}`);
+    return log(`ERROR no such file or directory: ${file}`, err);
   }
 }
 
@@ -121,7 +125,7 @@ async function deleteFile(file) {
     await fs.unlink(file);
     return log(`${file}: deleted`);
   } catch (err) {
-    return log(`ERROR no such file or directory: ${file}\n\n${err}`);
+    return log(`ERROR no such file or directory: ${file}`, err);
   }
 }
 
@@ -129,16 +133,17 @@ async function deleteFile(file) {
  * Creates file with an empty object inside.
  * Gracefully errors if the file already exists.
  * @param {string} file JSON filename
+ * @content {{JSON}} content JSON object formatted content
  */
-async function createFile(file) {
+async function createFile(file, content) {
   try {
     await fs.access(file);
-    return log(`ERROR file or directory already exists: ${file}`);
-  } catch {
-    const emptyObject = {};
-    await fs.writeFile(file, emptyObject);
+  } catch (err) {
+    await fs.writeFile(file, JSON.stringify(content));
     return log(`${file}: created`);
   }
+
+  return log('', Error(`ERROR file or directory already exists: ${file}`));
 }
 
 /**
@@ -177,7 +182,7 @@ async function mergeData() {
     await fs.writeFile('merged.json', JSON.stringify(allData));
     return log(`merged.json created`);
   } catch (err) {
-    return log(`ERROR reading directory\n\n${err}`);
+    return log(`ERROR reading directory`, err);
   }
 }
 
@@ -209,9 +214,7 @@ async function union(fileA, fileB) {
     await fs.writeFile('union.txt', Object.keys(unionData));
     return log(`${fileA} and ${fileB}: union.txt created`);
   } catch (err) {
-    return log(
-      `ERROR reading file or directory ${fileA} or ${fileB}\n\n${err}`
-    );
+    return log(`ERROR reading file or directory ${fileA} or ${fileB}`, err);
   }
 }
 
@@ -242,9 +245,7 @@ async function intersect(fileA, fileB) {
     await fs.writeFile('intersect.txt', Object.keys(intersectData));
     return log(`${fileA} and ${fileB}: intersect.txt created`);
   } catch (err) {
-    return log(
-      `ERROR reading file or directory ${fileA} or ${fileB}\n\n${err}`
-    );
+    return log(`ERROR reading file or directory ${fileA} or ${fileB}`, err);
   }
 }
 
@@ -280,9 +281,7 @@ async function difference(fileA, fileB) {
     await fs.writeFile('difference.txt', Object.keys(differentData));
     return log(`${fileA} and ${fileB}: difference.txt created`);
   } catch (err) {
-    return log(
-      `ERROR reading file or directory ${fileA} or ${fileB}\n\n${err}`
-    );
+    return log(`ERROR reading file or directory ${fileA} or ${fileB}`, err);
   }
 }
 
