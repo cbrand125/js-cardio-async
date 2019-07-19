@@ -1,7 +1,4 @@
 const fs = require('fs').promises;
-/*
-All of your functions must return a promise!
-*/
 
 /* 
 Every function should be logged with a timestamp.
@@ -65,7 +62,7 @@ function reset() {
 }
 
 /**
- * Logs the value of object[key]
+ * Logs and returns the value of object[key] in file
  * @param {string} file
  * @param {string} key
  */
@@ -88,7 +85,7 @@ async function get(file, key) {
 }
 
 /**
- * Sets the value of object[key] and rewrites object to file
+ * Sets the value of object[key] and rewrites object to file, logging and returning results
  * @param {string} file
  * @param {string} key
  * @param {string} value
@@ -106,7 +103,7 @@ async function set(file, key, value) {
 }
 
 /**
- * Deletes key from object and rewrites object to file
+ * Deletes key from object and rewrites object to file, logging and returning results
  * @param {string} file
  * @param {string} key
  */
@@ -125,6 +122,7 @@ async function remove(file, key) {
 /**
  * Deletes file.
  * Gracefully errors if the file does not exist.
+ * Logs and returns results.
  * @param {string} file
  */
 async function deleteFile(file) {
@@ -139,8 +137,9 @@ async function deleteFile(file) {
 /**
  * Creates file with an empty object inside.
  * Gracefully errors if the file already exists.
+ * Logs and returns results.
  * @param {string} file JSON filename
- * @content {{JSON}} content JSON object formatted content
+ * @param {JSON} content JSON object formatted content
  */
 async function createFile(file, content) {
   try {
