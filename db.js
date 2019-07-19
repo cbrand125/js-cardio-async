@@ -16,6 +16,11 @@ ex after running delete('user.json'):
 Errors should also be logged (preferably in a human-readable format)
 */
 
+/**
+ * Logs a given error or informational string
+ * @param {string/Error} value what to log in the log file. Throws error if given an Error after logging.
+ * @returns {string} returns string value given (for convenience purposes).
+ */
 async function log(value) {
   if (value instanceof Error) {
     await fs.appendFile('log.txt', `${value.message} ${Date.now()}\n`);

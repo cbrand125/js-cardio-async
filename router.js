@@ -16,6 +16,11 @@ const {
   postReset
 } = require('./controller');
 
+/**
+ * decides how to route a request using the path and query parameters
+ * @param {Request} request http request object
+ * @param {Response} response http response object
+ */
 function handleRoutes(request, response) {
   const parsedUrl = url.parse(request.url, true);
   const { query } = parsedUrl;
