@@ -215,7 +215,6 @@ exports.postMerge = (request, response) => {
  */
 exports.getRead = async (request, response, pathname) => {
   const file = pathname.split('/')[2];
-
   if (!file || !file.endsWith('.json')) {
     return this.notFound(request, response);
   }
@@ -224,7 +223,13 @@ exports.getRead = async (request, response, pathname) => {
     'Content-Type': 'application/json'
   });
 
-  response.end(await fs.readFile(file));
+  let fileText;
+  try {
+    fileText = await fs.readFile(file);
+  } catch {
+    return this.notFound(request, response);
+  }
+  response.end(fileText);
 };
 
 /**

@@ -1,4 +1,9 @@
 node_modules
 union.json
+intersect.json
+difference.json
 merged.json
 log.txt
+andrew.json
+scott.json
+post.json
